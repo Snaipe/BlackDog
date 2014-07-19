@@ -1,5 +1,5 @@
 """
-Tequila: a command-line Minecraft server manager written in python
+BlackDog
 
 Copyright (C) 2014 Snaipe, Ojukashi
 

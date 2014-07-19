@@ -1,5 +1,5 @@
 """
-Tequila: a command-line Minecraft server manager written in python
+BlackDog
 
 Copyright (C) 2014 Snaipe, Ojukashi
 
@@ -18,15 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-import os
-from blackdog.config import Config, config_node
-from blackdog.exception import TequilaException
 from blackdog.bukkitdev import BukkitDev
-from blackdog.server import Server, HTTPServer
-from blackdog.command import Commands, command, arg
+from blackdog.server import HTTPServer
 
 
 class BlackDog(object):
+    _instance = None
 
     @classmethod
     def instance(cls):

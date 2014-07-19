@@ -1,5 +1,5 @@
 """
-Tequila: a command-line Minecraft server manager written in python
+BlackDog
 
 Copyright (C) 2014 Snaipe, Ojukashi
 
@@ -16,7 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from enum import Enum
 import os
+import re
 
 
 class Plugin(object):
@@ -24,6 +26,7 @@ class Plugin(object):
     def __init__(self, name, version=None):
         self.name = name
         self.version = version
+        self.display = None
         self.url = None
         self.sha1 = None
         self.md5 = None
@@ -46,15 +49,40 @@ class Plugin(object):
         return self
 
 
+class PluginStage(Enum):
+    planning = 'p'
+    alpha = 'a'
+    beta = 'b'
+    release = 'r'
+    mature = 'm'
+    inactive = 'i'
+    abandoned = 'x'
+    deleted = 'd'
+
+
 class BukkitDev(object):
 
     def __init__(self):
         self.cache_dir = os.path.expanduser('~/.blackdog/')
+        self.base = 'http://dev.bukkit.org'
 
     def _fill_plugin_meta(self, plugin):
         # TODO: analyze the html and set the plugin's url, and whenever it exists or not.
 
         plugin.save(self.cache_dir)
+
+    @staticmethod
+    def _to_post_arg(args):
+        """
+        Transforms a dictionary to POST parameters:
+        {a: 1, b: '2', c='a b'} -> 'a=1&b=2&c=a+b'
+        :param args: the dictionary to transform
+        :return: the POST parameters
+        """
+        arg_list = []
+        for key, value in args.items():
+            arg_list.append(key + '=' + re.sub(r'[ \t\r\n]+', '+', str(value)))
+        return '&'.join(arg_list)
 
     def get_plugin(self, name, version, no_query=False):
         """
@@ -71,15 +99,18 @@ class BukkitDev(object):
 
         return plugin
 
-    def search(self, query, page=1, category=None):
+    def search(self, **kwargs):
         """
-        Searchs for a plugin, from
-        :param query: the query string
+        Searchs for a plugin
+        :param search: the query string
         :param page: the result page number, first page by default
         :param category: the plugin category, or all categories if None
+        :param stage: the development stage
         :return: a list of matching plugins
         """
 
+        url = '/'.join([self.base, 'bukkit-plugins', '?%s' % self._to_post_arg(kwargs)])
         results = [] # TODO: fill with results
 
         return results
+
