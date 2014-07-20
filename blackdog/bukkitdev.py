@@ -17,12 +17,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from enum import Enum
+from pyquery import PyQuery
 import re
 
 
 class Plugin(object):
     def __init__(self, name):
         self.name = name
+        self.summary = None
+        self.stage = None
         self.display = None
         self.versions = {}
         self.exists = None
@@ -66,6 +69,10 @@ class PluginStage(Enum):
     inactive = 'i'
     abandoned = 'x'
     deleted = 'd'
+
+    @classmethod
+    def from_string(cls, string):
+        return getattr(PluginStage, string.lower(), None)
 
 
 class BukkitDev(object):
@@ -117,8 +124,14 @@ class BukkitDev(object):
         :return: a list of matching plugins
         """
 
-        url = '/'.join([self.base, 'bukkit-plugins', '?%s' % self._to_post_arg(kwargs)])
-        results = [] # TODO: fill with results
+        results = []
+        page_content = PyQuery(url='/'.join([self.base, 'bukkit-plugins', '?%s' % self._to_post_arg(kwargs)]))
+        plugin_table = page_content('#bd .line .unit .listing-container .listing-container-inner table tbody tr')
+
+        for (info, summary) in zip(plugin_table[::2], plugin_table[1::2]):
+            plugin = Plugin(name=Plugin(PyQuery(info)('td.col-project h2 a').attr('href').split('/')[2]))
+            plugin.stage = PluginStage.from_string(PyQuery(info)('td.col-status').text())
+            plugin.summary = PyQuery(summary)('td.summary').text()
+            results.append(plugin)
 
         return results
-
