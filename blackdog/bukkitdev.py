@@ -22,15 +22,14 @@ import re
 
 
 class Plugin(object):
-
-    def __init__(self, name, version=None):
+    def __init__(self, name):
         self.name = name
-        self.version = version
         self.display = None
-        self.url = None
-        self.sha1 = None
-        self.md5 = None
+        self.versions = {}
         self.exists = None
+
+    def add_version(self, version):
+        self.versions[version.version] = version
 
     def load(self, directory):
         """
@@ -47,6 +46,16 @@ class Plugin(object):
         :return: the plugin itself
         """
         return self
+
+
+class PluginVersion(object):
+    def __init__(self, plugin, version):
+        self.plugin = plugin
+        self.version = version
+        self.url = None
+        self.sha1 = None
+        self.md5 = None
+        self.exists = None
 
 
 class PluginStage(Enum):
