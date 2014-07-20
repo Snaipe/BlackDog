@@ -34,6 +34,7 @@ setup(
     keywords="minecraft bukkitdev plugin maven repository",
     url="http://github.com/Snaipe/blackdog.git",
     packages=['blackdog'],
+    install_requires=['pyquery'],
     long_description=read('README.md'),
     scripts=['bin/blackdog'],
     include_package_data=True,
