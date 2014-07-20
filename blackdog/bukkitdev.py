@@ -129,8 +129,9 @@ class BukkitDev(object):
         plugin_table = page_content('#bd .line .unit .listing-container .listing-container-inner table tbody tr')
 
         for (info, summary) in zip(plugin_table[::2], plugin_table[1::2]):
-            plugin = Plugin(name=Plugin(PyQuery(info)('td.col-project h2 a').attr('href').split('/')[2]))
-            plugin.stage = PluginStage.from_string(PyQuery(info)('td.col-status').text())
+            info = PyQuery(info)
+            plugin = Plugin(name=Plugin(info('td.col-project h2 a').attr('href').split('/')[2]))
+            plugin.stage = PluginStage.from_string(info('td.col-status').text())
             plugin.summary = PyQuery(summary)('td.summary').text()
             results.append(plugin)
 
