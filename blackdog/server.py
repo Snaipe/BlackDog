@@ -27,6 +27,7 @@ class HTTPServer(object):
 
     def __enter__(self):
         self.server = TCPServer(("", self.port), RequestHandler)
+        return self.server
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.server.server_close()

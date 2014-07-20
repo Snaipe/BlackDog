@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from enum import Enum
-import os
 import re
 
 
@@ -71,8 +70,8 @@ class PluginStage(Enum):
 
 class BukkitDev(object):
 
-    def __init__(self):
-        self.cache_dir = os.path.expanduser('~/.blackdog/')
+    def __init__(self, cache_dir):
+        self.cache_dir = cache_dir
         self.base = 'http://dev.bukkit.org'
 
     def _fill_plugin_meta(self, plugin):
