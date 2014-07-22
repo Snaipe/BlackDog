@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
+from urllib.request import URLopener
+import requests
 
 
 class HTTPServer(object):
@@ -48,10 +50,12 @@ class RequestHandler(SimpleHTTPRequestHandler):
         plugin_version = dir_path[-1]
         plugin_name = dir_path[-2]
 
-        plugin = self.blackdog.bukkitdev.get_plugin(plugin_name, plugin_version)
+        plugin = self.blackdog.bukkitdev.get_plugin(plugin_name)
+        version = plugin.get_version(plugin_version)
 
-        # TODO: do something with those
         if self.path.endswith('.jar'):
+            r = requests.head(version.url)
+
             pass
         if self.path.endswith('.jar.sha1'):
             pass

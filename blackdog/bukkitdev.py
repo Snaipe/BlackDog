@@ -186,7 +186,7 @@ class BukkitDev(object):
         self.logger.info('Scanning http://dev.bukkit.org/...')
         for stage in stages:
             self.logger.info('Processing plugins for stage \'%s\'', stage.name)
-            page = 0
+            page = 1
             more = True
             while more:
                 self.logger.info('processing page %s...', page)
