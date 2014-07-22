@@ -20,5 +20,21 @@ from string import Template
 
 
 class BlackDogException(Exception):
-    def __init__(self, message, **kargs):
+    def __init__(self, message, *args, **kargs):
+        super().__init__(*args)
         self.message = Template(message).substitute(**kargs)
+
+
+class ServerAlreadyRunningException(BlackDogException):
+    def __init__(self):
+        super().__init__('Server is already running')
+
+
+class ServerNotRunningException(BlackDogException):
+    def __init__(self):
+        super().__init__('Server is not running')
+
+
+class NoSuchPluginVersionException(BlackDogException):
+    def __init__(self, version):
+        super().__init__('Version ${version} could not be found', version, version=version)

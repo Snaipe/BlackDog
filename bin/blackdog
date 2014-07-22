@@ -1,5 +1,45 @@
 #!python
-from blackdog import BlackDog
+import os
+import signal
+
+from baker import command
+from blackdog import BlackDog, HTTPServer, PluginStage, ServerAlreadyRunningException, ServerNotRunningException
+
+
+@command
+def start(port=8140, fork=True):
+    bd = BlackDog.instance
+    if bd.is_server_running():
+        raise ServerAlreadyRunningException()
+    if not fork or os.fork() == 0:
+        with open(bd.pidfile, 'w') as f:
+            f.write(str(os.getpid()))
+
+        with HTTPServer(port) as server:
+            bd.logger.info('Starting server...')
+            server.serve_forever()
+
+
+@command
+def stop():
+    bd = BlackDog.instance
+    if not bd.is_server_running():
+        raise ServerNotRunningException()
+    os.kill(bd.get_server_pid(), signal.SIGTERM)
+
+
+@command
+def scan(*args):
+    bd = BlackDog.instance
+    stages = []
+    for stage in args:
+        stages.append(PluginStage.from_string(stage))
+
+    if len(stages) == 0:
+        bd.bukkitdev.scan()
+    else:
+        bd.bukkitdev.scan(stages)
+
 
 if __name__ == '__main__':
     BlackDog().main()

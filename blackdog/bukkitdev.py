@@ -16,12 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import hashlib
 import logging
 import re
 
 from configparser import ConfigParser
 from enum import Enum
+from string import Template
 from pyquery import PyQuery
+from blackdog import NoSuchPluginVersionException
 
 
 class Plugin(object):
@@ -36,6 +39,12 @@ class Plugin(object):
 
     def add_version(self, version):
         self.versions[version.version] = version
+
+    def get_version(self, version):
+        try:
+            return self.versions[version]
+        except KeyError as e:
+            raise NoSuchPluginVersionException(e.args[0])
 
     def _get_config(self, directory):
         from os.path import join
@@ -93,12 +102,38 @@ class Plugin(object):
 
 
 class PluginVersion(object):
-    def __init__(self, plugin, version):
+    POM_BASE = """
+        <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>${groupid}</groupId>
+            <artifactId>${artifactid}</artifactId>
+            <version>${version}</version>
+        </project>
+        """
+
+    def __init__(self, plugin: Plugin, version):
         self.plugin = plugin
         self.version = version
         self.url = None
         self.sha1 = None
         self.md5 = None
+
+    def get_pom(self, groupid):
+        return Template(PluginVersion.POM_BASE).substitute(
+            groupid=groupid,
+            artifactid=self.plugin.name,
+            version=self.version
+        )
+
+    def __get_pom_hash(self, groupid, hash):
+        hash.update(self.get_pom(groupid))
+        return hash.digest()
+
+    def get_pom_md5(self, groupid):
+        return self.__get_pom_hash(groupid, hashlib.md5())
+
+    def get_pom_sha1(self, groupid):
+        return self.__get_pom_hash(groupid, hashlib.sha1())
 
 
 class PluginStage(Enum):
@@ -113,7 +148,7 @@ class PluginStage(Enum):
 
     @classmethod
     def from_string(cls, string):
-        return getattr(PluginStage, string.lower(), None)
+        return getattr(PluginStage, string.lower(), None) if string else None
 
 
 class BukkitDev(object):
@@ -122,6 +157,12 @@ class BukkitDev(object):
         self.cache_dir = cache_dir
         self.base = 'http://dev.bukkit.org'
         self.logger = logging.getLogger('BukkitDev')
+
+    def save_plugin(self, plugin):
+        return plugin.save(self.cache_dir)
+
+    def load_plugin(self, plugin):
+        return plugin.load(self.cache_dir)
 
     def _fill_plugin_meta(self, plugin):
         # TODO: analyze the html and set the plugin's url, and whenever it exists or not.

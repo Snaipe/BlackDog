@@ -20,23 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import errno
 import logging
 import os
-import signal
 from os.path import exists, expanduser, join
-from baker import command, run
 
-from blackdog.bukkitdev import BukkitDev, PluginStage
-from blackdog.exception import BlackDogException
+from baker import run
+
+from blackdog.exception import *
+from blackdog.bukkitdev import BukkitDev, PluginStage, Plugin, PluginVersion
 from blackdog.server import HTTPServer
-
-
-class ServerAlreadyRunningException(BlackDogException):
-    def __init__(self):
-        super().__init__('Server is already running')
-
-
-class ServerNotRunningException(BlackDogException):
-    def __init__(self):
-        super().__init__('Server is not running')
 
 
 class BlackDog(object):
@@ -78,38 +68,3 @@ class BlackDog(object):
         if not pid:
             return False
         return self.checkpid(pid)
-
-
-@command
-def start(port=8140, fork=True):
-    bd = BlackDog.instance
-    if bd.is_server_running():
-        raise ServerAlreadyRunningException()
-    if not fork or os.fork() == 0:
-        with open(bd.pidfile, 'w') as f:
-            f.write(str(os.getpid()))
-
-        with HTTPServer(port) as server:
-            bd.logger.info('Starting server...')
-            server.serve_forever()
-
-
-@command
-def stop():
-    bd = BlackDog.instance
-    if not bd.is_server_running():
-        raise ServerNotRunningException()
-    os.kill(bd.get_server_pid(), signal.SIGTERM)
-
-
-@command
-def scan(*args):
-    bd = BlackDog.instance
-    stages = []
-    for stage in args:
-        stages.append(PluginStage.from_string(stage))
-
-    if len(stages) == 0:
-        bd.bukkitdev.scan()
-    else:
-        bd.bukkitdev.scan(stages)
