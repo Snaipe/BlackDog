@@ -1,7 +1,7 @@
 """
-Tequila: a command-line Minecraft server manager written in python
+Blackdog
 
-Copyright (C) 2014 Snaipe, Ojukashi
+Copyright (C) 2014 Snaipe, Therozin
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ def read(fname):
 setup(
     name="blackdog",
     version="1.0.0",
-    author="Snaipe, Ojukashi",
+    author="Snaipe, Therozin",
     author_email="franklinmathieu@gmail.com",
     description="A bukkitdev to maven repository mapper",
     license="GPLv3",
