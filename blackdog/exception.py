@@ -35,6 +35,11 @@ class ServerNotRunningException(BlackDogException):
         super().__init__('Server is not running')
 
 
+class NoSuchPluginException(BlackDogException):
+    def __init__(self, plugin):
+        super().__init__('Plugin ${name} could not be found', plugin, name=plugin.name)
+
+
 class NoSuchPluginVersionException(BlackDogException):
     def __init__(self, version):
         super().__init__('Version ${version} could not be found', version, version=version)

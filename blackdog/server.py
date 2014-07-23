@@ -103,7 +103,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(chunk)
                 sha1.update(chunk)
             version.sha1 = sha1.hexdigest()
-            blackdog.BlackDog.instance.bukkitdev.save_plugin(version.plugin)
+            blackdog.BlackDog.instance.bukkitdev.save_plugin(version.get_plugin())
         else:
             for chunk in r.iter_content(16 * 1024):
                 self.wfile.write(chunk)
