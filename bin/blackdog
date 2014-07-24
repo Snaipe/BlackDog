@@ -3,21 +3,33 @@ import os
 import signal
 
 from baker import command
+import sys
 from blackdog import BlackDog, HTTPServer, PluginStage, ServerAlreadyRunningException, ServerNotRunningException
 
 
+def _daemonize():
+    if os.fork() > 0:
+        sys.exit(0)
+    os.setsid()
+    if os.fork() > 0:
+        sys.exit(0)
+
+
 @command
-def start(port=8140, fork=True):
+def start(port=8140, daemonize=True):
     bd = BlackDog.instance
     if bd.is_server_running():
         raise ServerAlreadyRunningException()
-    if not fork or os.fork() == 0:
+
+    if daemonize:
+        _daemonize()
+
         with open(bd.pidfile, 'w') as f:
             f.write(str(os.getpid()))
 
-        with HTTPServer(port) as server:
-            bd.logger.info('Starting server...')
-            server.serve_forever()
+    with HTTPServer(port) as server:
+        bd.logger.info('Starting server...')
+        server.serve_forever()
 
 
 @command
