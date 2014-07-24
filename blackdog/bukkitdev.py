@@ -48,6 +48,7 @@ class BukkitDev(object):
         version.stage(meta['Type'].text())
         version.date(meta['Uploaded on'].text())
         version.game_versions([v.text() for v in meta['Game version']('ul li').items()])
+        version.url(meta['Filename']('a').eq(0).attr('href'))
 
     def _fill_plugin_meta(self, plugin: Plugin, version=None):
         try:

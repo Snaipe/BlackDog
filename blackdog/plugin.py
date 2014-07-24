@@ -72,6 +72,9 @@ class Plugin(object):
         except KeyError as e:
             raise NoSuchPluginVersionException(e.args[0])
 
+    def has_version(self, version):
+        return version in self.versions
+
     def _get_config(self, directory):
         from os.path import join
         return join(directory, self.path_name + '.data')
@@ -112,14 +115,16 @@ class Plugin(object):
 
 
 class PluginVersion(object):
-    __POM_BASE = """
-        <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>${groupid}</groupId>
-            <artifactId>${artifactid}</artifactId>
-            <version>${version}</version>
-        </project>
-        """
+    __POM_BASE = \
+        '<?xml version="1.0" encoding="UTF-8"?>\n' \
+        '<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"\n' \
+        '    xmlns="http://maven.apache.org/POM/4.0.0"\n' \
+        '    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' \
+        '    <modelVersion>4.0.0</modelVersion>\n' \
+        '    <groupId>${groupid}</groupId>\n' \
+        '    <artifactId>${artifactid}</artifactId>\n' \
+        '    <version>${version}</version>\n' \
+        '</project>'
 
     def __init__(self, plugin: Plugin, version):
         if not version or not plugin:
@@ -151,6 +156,9 @@ class PluginVersion(object):
     def game_versions(self):
         return None
 
+    def can_download(self):
+        return self.url() and self.md5()
+
     def get_version(self):
         return self.__version
 
@@ -165,8 +173,8 @@ class PluginVersion(object):
         )
 
     def __get_pom_hash(self, groupid, hash):
-        hash.update(self.get_pom(groupid))
-        return hash.digest()
+        hash.update(self.get_pom(groupid).encode('ascii'))
+        return hash.hexdigest()
 
     def get_pom_md5(self, groupid):
         return self.__get_pom_hash(groupid, hashlib.md5())

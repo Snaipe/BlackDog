@@ -22,22 +22,25 @@ from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
 
 import requests
-import blackdog
 
 from blackdog import PluginVersion, BlackDogException
 
 
-class HTTPServer(object):
+class HTTPServer(TCPServer):
 
     def __init__(self, port):
+        super().__init__(("", port), RequestHandler, bind_and_activate=False)
+        from blackdog import BlackDog
+        self.blackdog = BlackDog.instance
         self.port = port
 
     def __enter__(self):
-        self.server = TCPServer(("", self.port), RequestHandler)
-        return self.server
+        self.server_bind()
+        self.server_activate()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.server.server_close()
+        self.server_close()
 
 
 def pattern(pattern):
@@ -49,18 +52,15 @@ def pattern(pattern):
 
 class RequestHandler(SimpleHTTPRequestHandler):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        from blackdog import BlackDog
-        self.blackdog = BlackDog.instance
-        self.handles = []
-
-        for m in [m for m in [getattr(self, m) for m in dir(self)] if hasattr(m, 'pattern')]:
-            self.handles.append((m.pattern, m))
+    def get_groupid(self):
+        return '.'.join(self.path.split('/')[1:-3])
 
     def handle_pattern(self, path, *args, **kwargs):
-        for p, m in self.handles:
+        handles = []
+        for m in [m for m in [getattr(self, m) for m in dir(self)] if hasattr(m, 'pattern')]:
+            handles.append((m.pattern, m))
+
+        for p, m in handles:
             if re.match(p, path):
                 m(*args, **kwargs)
                 return True
@@ -76,16 +76,16 @@ class RequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-type', mime)
         self.send_header('Content-length', len(content))
         self.end_headers()
-        self.wfile.write(content)
+        self.wfile.write(content.encode('ascii'))
 
     @pattern(r'.*\.jar$')
     def handle_jar(self, version: PluginVersion):
-        if not version.url:
+        if not version.url():
             self.send_response(404)
             self.end_headers()
             return
 
-        r = requests.get(version.url, stream=True)
+        r = requests.get(version.url(), stream=True)
         if r.status_code != 200:
             self.send_response(404)
             self.end_headers()
@@ -97,21 +97,20 @@ class RequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-length', r.headers['content-length'])
         self.end_headers()
 
-        if not version.sha1:
+        if not version.sha1():
             sha1 = hashlib.sha1()
             for chunk in r.iter_content(16 * 1024):
                 self.wfile.write(chunk)
                 sha1.update(chunk)
-            version.sha1 = sha1.hexdigest()
-            blackdog.BlackDog.instance.bukkitdev.save_plugin(version.get_plugin())
+            version.sha1(sha1.hexdigest())
+            self.server.blackdog.bukkitdev.save_plugin(version.get_plugin())
         else:
             for chunk in r.iter_content(16 * 1024):
                 self.wfile.write(chunk)
 
     @pattern(r'.*\.pom$')
     def handle_pom(self, version: PluginVersion):
-        groupid = '.'.join(self.path.split('/')[:-3])
-        self.handle_text(version.get_pom(groupid), mime='text/xml')
+        self.handle_text(version.get_pom(self.get_groupid()), mime='text/xml')
 
     @pattern(r'.*\.jar.sha1$')
     def handle_jar_sha1(self, version: PluginVersion):
@@ -123,13 +122,11 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
     @pattern(r'.*\.pom.sha1$')
     def handle_pom_sha1(self, version: PluginVersion):
-        groupid = '.'.join(self.path.split('/')[:-3])
-        self.handle_text(version.get_pom_sha1(groupid))
+        self.handle_text(version.get_pom_sha1(self.get_groupid()))
 
     @pattern(r'.*\.pom.md5$')
     def handle_pom_md5(self, version: PluginVersion):
-        groupid = '.'.join(self.path.split('/')[:-3])
-        self.handle_text(version.get_pom_md5(groupid))
+        self.handle_text(version.get_pom_md5(self.get_groupid()))
 
     def do_GET(self):
         from blackdog import BlackDog
@@ -145,7 +142,10 @@ class RequestHandler(SimpleHTTPRequestHandler):
             return
 
         try:
-            plugin = blackdog.bukkitdev.get_plugin(plugin_name)
+            plugin = blackdog.bukkitdev.get_plugin(plugin_name, no_query=True)
+            if not plugin.has_version(plugin_version) or plugin.get_version(plugin_version).can_download():
+                plugin = blackdog.bukkitdev.get_plugin(plugin_name)
+
             version = plugin.get_version(plugin_version)
 
             if not self.handle_pattern(self.path, version):
