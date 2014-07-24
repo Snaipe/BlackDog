@@ -143,8 +143,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
         try:
             plugin = blackdog.bukkitdev.get_plugin(plugin_name, no_query=True)
-            if not plugin.has_version(plugin_version) or plugin.get_version(plugin_version).can_download():
-                plugin = blackdog.bukkitdev.get_plugin(plugin_name)
+            if not plugin.has_version(plugin_version) or not plugin.get_version(plugin_version).can_download():
+                plugin = blackdog.bukkitdev.get_plugin(plugin_name, version=plugin_version)
 
             version = plugin.get_version(plugin_version)
 
