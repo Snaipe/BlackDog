@@ -40,6 +40,10 @@ def scan(*args):
     else:
         bd.bukkitdev.scan(stages)
 
+@command
+def get(plugin, version=None):
+    bd = BlackDog.instance
+    bd.bukkitdev.get_plugin(plugin, version)
 
 if __name__ == '__main__':
     BlackDog().main()
