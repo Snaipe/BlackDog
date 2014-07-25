@@ -54,9 +54,9 @@ class BlackDog(object):
         try:
             os.kill(pid, 0)
         except OSError as e:
-            return e.errno == errno.EPERM
-        else:
-            return True
+            if e.errno == errno.ESRCH:
+                return False
+        return True
 
     def get_server_pid(self):
         if exists(self.pidfile):
@@ -65,6 +65,4 @@ class BlackDog(object):
 
     def is_server_running(self):
         pid = self.get_server_pid()
-        if not pid:
-            return False
-        return self.checkpid(pid)
+        return self.checkpid(pid) if pid else False

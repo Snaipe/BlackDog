@@ -20,6 +20,7 @@ import hashlib
 import re
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
+import atexit
 
 import requests
 
@@ -37,9 +38,14 @@ class HTTPServer(TCPServer):
     def __enter__(self):
         self.server_bind()
         self.server_activate()
+        atexit.register(self.close)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        atexit.unregister(self.close)
+
+    def close(self):
         self.server_close()
 
 
