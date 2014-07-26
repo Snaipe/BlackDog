@@ -32,7 +32,7 @@ setup(
     description="A bukkitdev to maven repository mapper",
     license="GPLv3",
     keywords="minecraft bukkitdev plugin maven repository",
-    url="http://github.com/Snaipe/blackdog.git",
+    url="http://github.com/Snaipe/BlackDog.git",
     packages=['blackdog'],
     install_requires=['pyquery', 'baker', 'requests'],
     long_description=read('README.md'),
@@ -45,6 +45,6 @@ setup(
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3.4",
         "Topic :: System :: Systems Administration",
-        "Topic :: Utilities",
-    ],
+        "Topic :: Utilities"
+    ]
 )
