@@ -120,11 +120,11 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
     @pattern(r'.*\.jar.sha1$')
     def handle_jar_sha1(self, version: PluginVersion):
-        self.handle_text(version.sha1)
+        self.handle_text(version.sha1())
 
     @pattern(r'.*\.jar.md5$')
     def handle_jar_md5(self, version: PluginVersion):
-        self.handle_text(version.md5)
+        self.handle_text(version.md5())
 
     @pattern(r'.*\.pom.sha1$')
     def handle_pom_sha1(self, version: PluginVersion):
