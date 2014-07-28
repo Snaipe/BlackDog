@@ -138,9 +138,10 @@ class BukkitDev(object):
         for (info, summary) in zip(plugin_table[::2], plugin_table[1::2]):
             info = PyQuery(info)
             plugin = Plugin(name=info('td.col-project h2 a').attr('href').split('/')[2])
-            plugin.display_name(info('td.col-project').text())
+            plugin.display_name(re.sub('</?mark>', '', info('td.col-project h2 a').html()))
             plugin.stage(PluginStage.from_string(info('td.col-status').text()))
-            plugin.summary(PyQuery(summary)('td.summary').text())
+            plugin.summary(re.sub('</?mark>', '', PyQuery(summary)('td.summary').html()))
+
             results.append(plugin)
 
         return results
