@@ -59,5 +59,25 @@ def get(plugin, version=None):
     bd = BlackDog.instance
     bd.bukkitdev.get_plugin(plugin, version)
 
+@command(shortopts={'page': 'p', 'category': 'c', 'stage': 's'})
+def search(search, page=None, category=None, stage=None):
+    bd = BlackDog.instance
+    kwargs = {}
+    if page:
+        kwargs['page'] = page
+    if category:
+        kwargs['category'] = category
+    if stage:
+        kwargs['stage'] = stage
+
+    plugins = bd.bukkitdev.search(search=search, **kwargs)
+    print('{0:32} Stage'.format('Plugin'))
+
+    for plugin in plugins:
+        name = plugin.display_name()
+        if len(plugin.display_name()) > 32:
+            name = plugin.display_name()[0:29]+'...'
+        print('{0:32} {1}'.format(name, plugin.stage().name.capitalize()))
+
 if __name__ == '__main__':
     BlackDog().main()
