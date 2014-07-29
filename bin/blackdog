@@ -29,7 +29,7 @@ def start(port=8140, nodaemon=False):
         return
 
     with HTTPServer(port) as server:
-        bd.logger.info('Starting server...')
+        bd.logger.info('Starting server at http://localhost:%s/' % port)
         server.serve_forever()
 
 
