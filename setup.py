@@ -26,7 +26,7 @@ def read(fname):
 
 setup(
     name="blackdog",
-    version="1.0.1",
+    version="1.0.2",
     author="Snaipe, Therozin",
     author_email="franklinmathieu@gmail.com",
     description="A bukkitdev to maven repository mapper",

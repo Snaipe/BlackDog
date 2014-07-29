@@ -36,6 +36,7 @@ class BlackDog(object):
         BlackDog.instance = self
 
         logging.basicConfig(level='INFO', format="[%(name)s] %(message)s")
+        logging.getLogger('requests.packages.urllib3.connectionpool').disabled = True
 
         self.logger = logging.getLogger('BlackDog')
         self.directory = expanduser('~/.blackdog/')
