@@ -51,6 +51,7 @@ class BukkitDev(object):
         version.url(meta['Filename']('a').eq(0).attr('href'))
 
     def _fill_plugin_meta(self, plugin: Plugin, version=None):
+        self.logger.info('Getting metadata for plugin %s...', plugin.name)
         try:
             if not requests.head('/'.join([self.base, 'bukkit-plugins', plugin.name, ''])).ok:
                 plugin.exists(False)
@@ -73,18 +74,20 @@ class BukkitDev(object):
                         if tr('td.col-filename').text().endswith('.jar')]
 
                 for tr in list:
+                    version_str = ''
                     try:
                         version_str = re.sub(r'.*?([0-9]+(\.[0-9]+)+).*', '\\1', tr('td.col-file').text())
                         metalink = tr('td.col-file a').attr('href')
                         version_found = version == version_str or version == 'latest'
                         if metalink and version_str and (not version or version_found):
                             pversion = PluginVersion(plugin, version_str)
+                            self.logger.info('\tRetrieving informations for version %s...', version_str)
                             self._fill_version_meta(pversion, metalink)
                             plugin.add_version(pversion)
                             if version_found:
                                 break
                     except:
-                        self.logger.error('Could not retrieve metadata for plugin %s', plugin.name)
+                        self.logger.error('\tCould not retrieve metadata for version %s', version_str)
                         continue
                 else:
                     page += 1
