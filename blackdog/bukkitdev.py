@@ -153,11 +153,12 @@ class BukkitDev(object):
         if not stages:
             stages = [PluginStage.release, PluginStage.mature]
 
-        self.logger.info('Scanning http://dev.bukkit.org/...')
+        self.logger.info('Scanning %s', self.base)
         for stage in stages:
             self.logger.info('Processing plugins for stage \'%s\'', stage.name)
             page = 1
             more = True
+
             while more:
                 self.logger.info('processing page %s...', page)
                 plugins = self.search(stage=stage.value, page=page)
