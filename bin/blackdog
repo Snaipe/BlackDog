@@ -42,12 +42,14 @@ def stop():
     os.kill(bd.get_server_pid(), signal.SIGTERM)
 
 
-@command
-def scan(*args):
+@command(shortopts={'stages': 's'})
+def scan(*stages):
+    """
+    Performs a scan on BukkitDev, preprocessing all plugin metadata.
+    :param stages: The current stage of the plugin's development.
+    """
     bd = BlackDog.instance
-    stages = []
-    for stage in args:
-        stages.append(PluginStage.from_string(stage))
+    stages = list(map(PluginStage.from_string, stages))
 
     if len(stages) == 0:
         bd.bukkitdev.scan()
