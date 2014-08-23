@@ -9,6 +9,11 @@ from blackdog import BlackDog, HTTPServer, PluginStage, ServerAlreadyRunningExce
 
 @command(shortopts={'port': 'p', 'nodaemon': 'n'})
 def start(port=8140, nodaemon=False):
+    """
+    Deploy a Blackdog server on the specified port.
+    :param port: The number port.
+    :param nodaemon: Don't start blackdog in the background.
+    """
     bd = BlackDog.instance
 
     if not nodaemon:
@@ -35,6 +40,9 @@ def start(port=8140, nodaemon=False):
 
 @command
 def stop():
+    """
+    Stops the Blackdog server.
+    """
     bd = BlackDog.instance
     if not bd.is_server_running():
         raise ServerNotRunningException()
@@ -56,13 +64,27 @@ def scan(*stages):
     else:
         bd.bukkitdev.scan(stages)
 
-@command
+
+@command(shortopts={'version': 'v'})
 def get(plugin, version=None):
+    """
+    Process all informations for a given plugin.
+    :param plugin: Plugin's name.
+    :param version: Plugin's version.
+    """
     bd = BlackDog.instance
     bd.bukkitdev.get_plugin(plugin, version)
 
+
 @command(shortopts={'page': 'p', 'category': 'c', 'stage': 's'})
 def search(search, page=None, category=None, stage=None):
+    """
+    Search all the plugins on http://dev.bukkit.org/ for a given string.
+    :param search: The string to search.
+    :param page: The page number in the search results.
+    :param category: The plugin category.
+    :param stage: The current stage of the plugin's development.
+    """
     bd = BlackDog.instance
     kwargs = {}
     if page:
