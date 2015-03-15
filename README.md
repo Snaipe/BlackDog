@@ -1,6 +1,8 @@
 BlackDog
 ========
 
+**DISCLAIMER: This project is no longer actively maintained. I will still accept pull requests, so feel free to fork the project.**
+
 BlackDog is a local webservice that maps bukkitdev plugins to a maven repository structure.
 
 It is a delicious cocktail made with [Tequila][tequila].
